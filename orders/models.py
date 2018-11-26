@@ -4,7 +4,7 @@ from django.db import models
 class Menu(models.Model):
     type = models.CharField(max_length=64)
     name = models.CharField(max_length=64)
-    size = models.CharField(max_length=5, blank=True)
+    size = models.CharField(max_length=3)
     numToppings = models.IntegerField(blank=True)
     cost = models.DecimalField(max_digits=4, decimal_places=2)
 
@@ -12,4 +12,4 @@ class Menu(models.Model):
         if type == "Pizza":
             return f"{size} {type} pizza with {numToppings} toppings (${cost})"
         else:
-            return "test"
+            return "{size} {name} {type} ({cost})"
