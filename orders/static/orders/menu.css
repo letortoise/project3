@@ -1,0 +1,8 @@
+#size {
+    width: 100%;
+}
+
+#size > button {
+    border-radius: 0px;
+    padding: .75rem .75rem;
+}
