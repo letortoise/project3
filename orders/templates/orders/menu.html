@@ -1,0 +1,19 @@
+{% extends "orders/base.html" %}
+
+{% block title %}
+    Menu
+{% endblock %}
+
+{% block body %}
+    <div class="container col-lg">
+        <h5>Regular Pizza</h5>
+        <ul class="list-group">
+            {% for item in menu %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ item }}
+                    <small>another test</small>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
