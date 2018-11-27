@@ -28,6 +28,29 @@ class MenuItem(models.Model):
 
     def __str__(self):
         if self.type == "Regular Pizza" or "Sicilian Pizza":
-            return f"{self.size} {self.type} with {self.numToppings} toppings (${self.cost})"
+            return f"{self.numToppings} topping {self.size} {self.type}"
         else:
-            return f"{self.size} {self.name} {self.type} ({self.cost})"
+            return f"{self.size} {self.name} {self.type}"
+
+class Extra(models.Model):
+
+    name = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f"{self.name}"
+
+class Order(models.Model):
+
+    username = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f"{self.pk} - {self.username}"
+
+class OrderItem(models.Model):
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+    item = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    extras = models.ManyToManyField(Extra, blank=True)
+
+    def __str__(self):
+        return f"({self.order}) {self.item} with {self.extras}"

@@ -2,6 +2,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
+from django.core import serializers
 from .models import MenuItem
 
 
@@ -17,8 +18,12 @@ def index(request):
 
 def menu(request):
 
+    # Serialize the menu QuerySet for use with JavaScript
+    menuInfo = MenuItem.objects.all()
+    menu = serializers.serialize('json', menuInfo)
+
     context = {
-        "menu": MenuItem.objects.all()
+        "menu": menu
     }
     return render(request, "orders/menu.html", context)
 

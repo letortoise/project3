@@ -7,6 +7,10 @@
 
 {% block include %}
     <link rel="stylesheet" href="{% static 'orders/menu.css' %}"/>
+    <script src="{% static 'orders/menu.js' %}"></script>
+    <script>
+        let menu = {{ menu | safe}};
+    </script>
 {% endblock %}
 
 {% block body %}
