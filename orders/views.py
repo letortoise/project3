@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
@@ -8,11 +8,8 @@ from .models import MenuItem
 
 # Create your views here.
 def index(request):
-    print("index view is running")
-    print(request.user.is_authenticated)
     print(request.user)
     if not request.user.is_authenticated:
-        print("not authenticated")
         return render(request, "orders/login.html", {"message": None})
     return HttpResponseRedirect(reverse("menu"))
 
@@ -22,10 +19,30 @@ def menu(request):
     menuInfo = MenuItem.objects.all()
     menu = serializers.serialize('json', menuInfo)
 
+    # Prepare menu data for templating
+    
+
     context = {
-        "menu": menu
+        "menu": menu,
+        "menuInfo": menuInfo
     }
     return render(request, "orders/menu.html", context)
+
+def lookup(request):
+    try:
+        # Get information from XHR
+        type = request.POST["type"]
+        size = request.POST["size"]
+        numExtras = int(request.POST["numExtras"])
+
+        # Lookup menu item
+        item = MenuItem.objects.filter(type=type, size=size, numExtras=numExtras).first()
+    except KeyError:
+        return JsonResponse({"success": False})
+    except MenuItem.DoesNotExist:
+        return JsonResponse({"success": False})
+
+    return JsonResponse({"success": True, "id": item.pk})
 
 def login_view(request):
     username = request.POST["username"]

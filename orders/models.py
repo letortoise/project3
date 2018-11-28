@@ -26,11 +26,15 @@ class MenuItem(models.Model):
 
     cost = models.DecimalField(max_digits=4, decimal_places=2)
 
+    # Define the ordering for the menu items
+    class Meta:
+        ordering = ["type", "size", "numToppings"]
+
     def __str__(self):
         if self.type == "Regular Pizza" or "Sicilian Pizza":
-            return f"{self.numToppings} topping {self.size} {self.type}"
+            return f"{self.numToppings} topping {self.get_size_display()} {self.get_type_display()}"
         else:
-            return f"{self.size} {self.name} {self.type}"
+            return f"{self.get_size_display()} {self.name} {self.get_type_display()}"
 
 class Extra(models.Model):
 
