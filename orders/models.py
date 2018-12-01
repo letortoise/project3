@@ -31,7 +31,8 @@ class MenuItem(models.Model):
         ordering = ["type", "size", "numToppings"]
 
     def __str__(self):
-        if self.type == "Regular Pizza" or "Sicilian Pizza":
+        print(self.type)
+        if self.type in ("RP", "SP"):
             return f"{self.numToppings} topping {self.get_size_display()} {self.get_type_display()}"
         else:
             return f"{self.get_size_display()} {self.name} {self.get_type_display()}"

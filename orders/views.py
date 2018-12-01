@@ -16,15 +16,18 @@ def index(request):
 def menu(request):
 
     # Serialize the menu QuerySet for use with JavaScript
-    menuInfo = MenuItem.objects.all()
-    menu = serializers.serialize('json', menuInfo)
+    menu = serializers.serialize('json', MenuItem.objects.all())
 
     # Prepare menu data for templating
-    
+    regularPizzas = MenuItem.objects.filter(type="RP").all()
+    subs = MenuItem.objects.filter(type="SU").all()
+    pastas = MenuItem.objects.filter(type="PA").all()
 
     context = {
         "menu": menu,
-        "menuInfo": menuInfo
+        "regularPizzas": regularPizzas,
+        "subs": subs,
+        "pastas": pastas
     }
     return render(request, "orders/menu.html", context)
 
@@ -43,6 +46,9 @@ def lookup(request):
         return JsonResponse({"success": False})
 
     return JsonResponse({"success": True, "id": item.pk})
+
+def cart(request):
+    return render(request, "orders/cart.html")
 
 def login_view(request):
     username = request.POST["username"]

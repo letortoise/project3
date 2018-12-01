@@ -1,0 +1,30 @@
+{% extends "orders/base.html" %}
+{% load static %}
+
+{% block title %}
+    Your Cart
+{% endblock %}
+
+{% block include %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.12/handlebars.min.js"></script>
+
+    {% verbatim %}
+    <script id="cart-item" type="text/x-handlebars-template">
+        <div class="cart-item">
+            <p>
+                {{ item }}
+            </p>
+        </div>
+    </script>
+    {% endverbatim %}
+
+    <script src="{% static 'orders/cart.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+    <div id="items" class="container">
+
+
+    </div>
+{% endblock %}
