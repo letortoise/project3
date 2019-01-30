@@ -3,7 +3,9 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
-from .models import MenuItem
+from .models import MenuItem, Pizza, Order, OrderItem, Extra
+import json
+from json import JSONDecodeError
 
 
 # Create your views here.
@@ -15,40 +17,84 @@ def index(request):
 
 def menu(request):
 
-    # Serialize the menu QuerySet for use with JavaScript
-    menu = serializers.serialize('json', MenuItem.objects.all())
-
     # Prepare menu data for templating
-    regularPizzas = MenuItem.objects.filter(type="RP").all()
-    subs = MenuItem.objects.filter(type="SU").all()
-    pastas = MenuItem.objects.filter(type="PA").all()
+    menu = [
+        ("Regular Pizza", Pizza.objects.filter(type="Regular Pizza").all()),
+        ("Sicilian Pizza", Pizza.objects.filter(type="Sicilian Pizza").all()),
+        ("Subs",MenuItem.objects.filter(type="Sub").all()),
+        ("Pasta", MenuItem.objects.filter(type="Pasta").all()),
+        ("Salad", MenuItem.objects.filter(type="Salad").all()),
+        ("Dinner Platters", MenuItem.objects.filter(type="Dinner Platter").all())
+    ]
 
     context = {
-        "menu": menu,
-        "regularPizzas": regularPizzas,
-        "subs": subs,
-        "pastas": pastas
+        "menu": menu
     }
     return render(request, "orders/menu.html", context)
 
-def lookup(request):
-    try:
-        # Get information from XHR
-        type = request.POST["type"]
-        size = request.POST["size"]
-        numExtras = int(request.POST["numExtras"])
-
-        # Lookup menu item
-        item = MenuItem.objects.filter(type=type, size=size, numExtras=numExtras).first()
-    except KeyError:
-        return JsonResponse({"success": False})
-    except MenuItem.DoesNotExist:
-        return JsonResponse({"success": False})
-
-    return JsonResponse({"success": True, "id": item.pk})
-
 def cart(request):
     return render(request, "orders/cart.html")
+
+def submitOrder(request):
+
+    try:
+        # Get information from XHR
+        cartText = request.POST["cart"]
+        cart = json.loads(cartText)
+        print(cart)
+
+        # Create order in database
+        order = Order(user=request.user)
+        order.save()
+
+        # Create order items for each cart item
+        for cartItem in cart:
+            item = MenuItem.objects.get(pk=cartItem["id"])
+            order_item = OrderItem(order=order, item=item, cost=0)
+            size = cartItem.get("size")
+            if size:
+                order_item.size = size
+            order_item.save()
+
+            # Add extras to order
+            extras = cartItem.get("extras")
+            if extras:
+                for extra in extras:
+                    order_item.extras.add(Extra.objects.filter(name=extra["name"]).first())
+
+
+
+
+    except KeyError:
+        print("no such key")
+        return JsonResponse({"success": False})
+    except MenuItem.DoesNotExist:
+        print("no such menu item")
+        return JsonResponse({"success": False})
+    except JSONDecodeError:
+        print("invalid JSON document")
+        return JsonResponse({"success": False})
+
+
+
+    return JsonResponse({"success": True})
+
+def lookupExtras(request):
+    try:
+        item_id = int(request.POST["item_id"])
+        extras = MenuItem.get(pk=item_id).extras.all()
+        print(extras)
+        return JsonResponse(extras);
+    except KeyError:
+        print("no such key")
+        return JsonResponse({"success": False})
+    except MenuItem.DoesNotExist:
+        print("no such menu item")
+        return JsonResponse({"success": False})
+    except JSONDecodeError:
+        print("invalid JSON document")
+        return JsonResponse({"success": False})
+
 
 def login_view(request):
     username = request.POST["username"]
@@ -60,6 +106,17 @@ def login_view(request):
     else:
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
+
+def register_view(request):
+    if request.method == "GET":
+        print('register view')
+        return render(request, "orders/register.html", {"message": None})
+    else:
+        try:
+            username = request.POST["username"]
+            password = request.POST["password"]
+        except KeyError:
+            return HttpResponseRedirect(reverse("index"))
 
 def logout_view(request):
     logout(request)
